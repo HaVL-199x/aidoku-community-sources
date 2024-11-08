@@ -29,7 +29,7 @@ pub fn get_manga_list(filters: Vec<Filter>, page: i32) -> Result<MangaPageResult
 			},
 		}
 	}
-	let search_url = get_search_url(String::from("https://api.yurineko.net"), query, genre, page);
+	let search_url = get_search_url(String::from("https://api.yurineko.moe"), query, genre, page);
 	let json = Request::new(search_url.as_str(), HttpMethod::Get)
 		.json()?
 		.as_object()?;
@@ -52,7 +52,7 @@ pub fn get_manga_list(filters: Vec<Filter>, page: i32) -> Result<MangaPageResult
 #[get_manga_listing]
 pub fn get_manga_listing(listing: Listing, page: i32) -> Result<MangaPageResult> {
 	let url = format!(
-		"https://api.yurineko.net/{}?page={page}",
+		"https://api.yurineko.moe/{}?page={page}",
 		listing_map(listing.name)
 	);
 
@@ -75,7 +75,7 @@ pub fn get_manga_listing(listing: Listing, page: i32) -> Result<MangaPageResult>
 
 #[get_manga_details]
 fn get_manga_details(id: String) -> Result<Manga> {
-	let url = format!("https://api.yurineko.net/manga/{id}");
+	let url = format!("https://api.yurineko.moe/manga/{id}");
 	let json = Request::new(url.as_str(), HttpMethod::Get)
 		.json()?
 		.as_object()?;
@@ -84,7 +84,7 @@ fn get_manga_details(id: String) -> Result<Manga> {
 
 #[get_chapter_list]
 fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
-	let url = format!("https://api.yurineko.net/manga/{id}");
+	let url = format!("https://api.yurineko.moe/manga/{id}");
 
 	let json = Request::new(url.as_str(), HttpMethod::Get)
 		.json()?
@@ -112,7 +112,7 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 
 #[get_page_list]
 fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
-	let url = format!("https://api.yurineko.net/read/{chapter_id}");
+	let url = format!("https://api.yurineko.moe/read/{chapter_id}");
 	let mut request = Request::new(url.as_str(), HttpMethod::Get)
 		.header(
 			"Authorization", 
@@ -142,16 +142,16 @@ fn get_page_list(_manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
 
 #[modify_image_request]
 fn modify_image_request(request: Request) {
-	request.header("Referer", "https://yurineko.net")
+	request.header("Referer", "https://yurineko.moe")
 		.header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36 Edg/101.0.1210.39");
 }
 
 #[handle_url]
 pub fn handle_url(url: String) -> Result<DeepLink> {
-	let url = &url[21..]; // remove https://yurineko.net/
+	let url = &url[21..]; // remove https://yurineko.moe/
 
 	if url.starts_with("manga") {
-		// https://yurineko.net/manga/419
+		// https://yurineko.moe/manga/419
 		let id = &url[6..]; // remove manga/
 		let manga = get_manga_details(String::from(id))?;
 		return Ok(DeepLink {
@@ -159,7 +159,7 @@ pub fn handle_url(url: String) -> Result<DeepLink> {
 			chapter: None,
 		});
 	} else if url.starts_with("read") {
-		// https://yurineko.net/read/419/5473
+		// https://yurineko.moe/read/419/5473
 		let id = &url[5..]; // remove read/
 		let end = match id.find('/') {
 			Some(end) => end,
@@ -168,7 +168,7 @@ pub fn handle_url(url: String) -> Result<DeepLink> {
 		let manga_id = &id[..end];
 		let manga = get_manga_details(String::from(manga_id))?;
 
-		let api_url = format!("https://api.yurineko.net/read/{id}");
+		let api_url = format!("https://api.yurineko.moe/read/{id}");
 		let json = Request::new(api_url.as_str(), HttpMethod::Get)
 			.json()?
 			.as_object()?;
